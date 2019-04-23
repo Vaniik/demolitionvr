@@ -15,6 +15,19 @@ public class InputManager : Singleton<InputManager> {
     }
 
     bool triggerValue;
+
+    public bool GetAnyButtonDown()
+    {
+        if (IsXRConnected())
+        {
+            return GetTriggerVRLeftHand() || GetTriggerVRRightHand();
+        }
+        else
+        {
+            return GetButtonDown(MiniGameButtons.BUTTON1) || GetButtonDown(MiniGameButtons.BUTTON2);
+        }
+    }
+
     public float GetAxisHorizontal(){
         return Input.GetAxis("Horizontal");
     }
@@ -58,7 +71,8 @@ public class InputManager : Singleton<InputManager> {
         BUTTON1,
         BUTTON2,
         BUTTON3,
-        BUTTON4
+        BUTTON4,
+        BUTTON_START
     }
 
     public bool GetButton(MiniGameButtons button){
@@ -72,6 +86,8 @@ public class InputManager : Singleton<InputManager> {
                 return Input.GetButton("Fire3");
             case MiniGameButtons.BUTTON4:
                 return Input.GetButton("Fire4");
+            case MiniGameButtons.BUTTON_START:
+                return Input.GetButton("StartButton");
             default:
                 return false;
         }
@@ -88,6 +104,8 @@ public class InputManager : Singleton<InputManager> {
                 return Input.GetButtonDown("Fire3");
             case MiniGameButtons.BUTTON4:
                 return Input.GetButtonDown("Fire4");
+            case MiniGameButtons.BUTTON_START:
+                return Input.GetKeyDown(KeyCode.Escape);
             default:
                 return false;
         }

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CraneMovement : MonoBehaviour
 {
@@ -22,8 +23,8 @@ public class CraneMovement : MonoBehaviour
 
     float leftAxis, rightAxis, armCraneLateralRotationAxis, armCraneAxis;
     float leftWheelMovement, rightWheelMovement;
-    
 
+    AudioSource engineAudio;
     // Start is called before the first frame update
     void Start()
     {
@@ -42,6 +43,8 @@ public class CraneMovement : MonoBehaviour
 
         if (mesh_Arm == null)
             Crane = transform.Find("Arm_mesh").transform;
+
+        engineAudio = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -49,6 +52,28 @@ public class CraneMovement : MonoBehaviour
     {
         UpdateLeverInputs();
         UpdateMovements();
+        if(leftAxis == 0 && rightAxis == 0)
+        {
+            if (armCraneLateralRotationAxis == 0 && armCraneAxis == 0)
+                engineAudio.pitch = 1;
+            else
+                engineAudio.pitch = 1.05f;
+        }
+        else if((leftAxis == 0 && rightAxis != 0) || rightAxis == 0 && leftAxis != 0)
+        {
+            if(armCraneLateralRotationAxis == 0 && armCraneAxis == 0)
+            engineAudio.pitch = 1.05f; 
+            else
+                engineAudio.pitch = 1.1f;
+
+        }
+        else
+        {
+            if (armCraneLateralRotationAxis == 0 && armCraneAxis == 0)
+                engineAudio.pitch = 1.1f;
+            else
+                engineAudio.pitch = 1.15f;
+        }
     }
 
     private void UpdateMovements()
@@ -91,27 +116,36 @@ public class CraneMovement : MonoBehaviour
         armCraneLateralRotationAxis = 0;
         armCraneAxis = 0;
 
+        if(InputManager.Instance.GetButtonDown(InputManager.MiniGameButtons.BUTTON_START))
+        {
+            SceneManager.LoadScene("Menu");
+        }
+
         //TEMP INPUTS, here we will manage with the levers the value of each axis variable
+        if(!InputManager.Instance.IsXRConnected())
+        {
+            leftAxis = InputManager.Instance.GetAxisVertical();
+            rightAxis = InputManager.Instance.GetAxisVertical2();
 
-#if TEMP_INPUTS
-        leftAxis = InputManager.Instance.GetAxisVertical();
-        rightAxis = InputManager.Instance.GetAxisVertical2();
+            if (InputManager.Instance.GetButton(InputManager.MiniGameButtons.BUTTON1))
+                armCraneLateralRotationAxis = 1;
+            else if (InputManager.Instance.GetButton(InputManager.MiniGameButtons.BUTTON2))
+                armCraneLateralRotationAxis = -1;
 
-        if (InputManager.Instance.GetButton(InputManager.MiniGameButtons.BUTTON1))
-            armCraneLateralRotationAxis = 1;
-        else if (InputManager.Instance.GetButton(InputManager.MiniGameButtons.BUTTON2))
-            armCraneLateralRotationAxis = -1;
+            if (InputManager.Instance.GetButton(InputManager.MiniGameButtons.BUTTON3))
+                armCraneAxis = 1;
+            else if (InputManager.Instance.GetButton(InputManager.MiniGameButtons.BUTTON4))
+                armCraneAxis = -1;
+        }
 
-        if (InputManager.Instance.GetButton(InputManager.MiniGameButtons.BUTTON3))
-            armCraneAxis = 1;
-        else if (InputManager.Instance.GetButton(InputManager.MiniGameButtons.BUTTON4))
-            armCraneAxis = -1;
-#else
-        rightAxis = leverRightMovement.GetComponent<SlideLever>().valueLever;
-        leftAxis = leverLeftMovement.GetComponent<SlideLever>().valueLever;
-        armCraneLateralRotationAxis = leverCraneTrasversalMovement.GetComponent<SlideLever>().valueLever;
-        armCraneAxis = leverCraneHeight.GetComponent<SlideLever>().valueLever;
-#endif
+        else
+        {
+            rightAxis = leverRightMovement.GetComponent<SlideLever>().valueLever;
+            leftAxis = leverLeftMovement.GetComponent<SlideLever>().valueLever;
+            armCraneLateralRotationAxis = leverCraneTrasversalMovement.GetComponent<SlideLever>().valueLever;
+            armCraneAxis = leverCraneHeight.GetComponent<SlideLever>().valueLever;
+        }
+
         if (rightAxis > 1.0f)
             rightAxis = 1.0f;
         else if (rightAxis < -1.0f)

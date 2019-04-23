@@ -17,7 +17,7 @@ public class SlideLever : MonoBehaviour
 
     float[] anchorPoints = new float[3];
     public float snapDistance = 0.05f;
-    protected Transform controllerTransform;
+    [SerializeField] protected Transform controllerTransform;
     public delegate void SlideLeverEvent(int position);
     public static event SlideLeverEvent OnLeverSnap;
     //----------------------------------------------
@@ -29,6 +29,7 @@ public class SlideLever : MonoBehaviour
 
     private void Start()
     {
+        controllerTransform = null;
         maxZ = maxPoint.localPosition.z;
         minZ = minPoint.localPosition.z;
         anchorPoints[0] = minZ;
@@ -59,10 +60,11 @@ public class SlideLever : MonoBehaviour
     public void Update()
     {
         
-        //position = valueLever * maxZ;
-        //lever.transform.localPosition = new Vector3(lever.transform.localPosition.x, lever.transform.localPosition.y,position);
-        
+        position = valueLever * maxZ;
+        lever.transform.localPosition = new Vector3(lever.transform.localPosition.x, lever.transform.localPosition.y,position);
+     
         //If the user is "grabbing" the lever
+        
         if (controllerTransform != null)
         {
             //Get the controller's position relative to the lever (lever's local position)
@@ -78,19 +80,11 @@ public class SlideLever : MonoBehaviour
             //Set lever to new position
             lever.transform.localPosition = position;
 
-            valueLever = position.z / maxZ;
+            valueLever = (position.z / maxZ) * -1;
             //valueLever es el valor que tenemos que pasar para 
             //hacer el movimiento de la demoledora
         }
         
-
-        if(InputManager.Instance.GetTriggerVRRightHand()){
-            Debug.Log("Pressed the trigger right button");
-        }
-
-        if(InputManager.Instance.GetTriggerVRLeftHand()){
-            Debug.Log("Pressed the trigger left button");
-        }
         
     }
 
@@ -100,17 +94,25 @@ public class SlideLever : MonoBehaviour
         if(other.gameObject.tag == "Hand"){
             
             if(InputManager.Instance.GetTriggerVRRightHand()){
-                controllerTransform.position = other.gameObject.transform.position;
-                controllerTransform.rotation = other.gameObject.transform.rotation;
+                controllerTransform = other.gameObject.transform;
+                //controllerTransform.position = other.gameObject.transform.position;
+                //controllerTransform.rotation = other.gameObject.transform.rotation;
+            }
+            if(InputManager.Instance.GetTriggerVRLeftHand()){
+                controllerTransform = other.gameObject.transform;
+                //controllerTransform.position = other.gameObject.transform.position;
+                //controllerTransform.rotation = other.gameObject.transform.rotation;
             }
         }
     }
 
-    private void onTriggerExit(Collider other){
+     void OnTriggerExit(Collider other)
+    {
         if(other.gameObject.tag == "Hand"){
             SnapToPosition();
             controllerTransform = null;
+            
+            
         }
-
     }
 }
